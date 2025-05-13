@@ -82,7 +82,7 @@ exports.processPayment = async (req, res) => {
         amount: booking.totalPrice,
         paymentMethod,
         status: 'failed',
-        transactionId: generateTransactionId()
+        transactionId: generateTransactionId(paymentMethod)
       });
       
       await failedPayment.save();
@@ -101,7 +101,7 @@ exports.processPayment = async (req, res) => {
       amount: booking.totalPrice,
       paymentMethod,
       status: 'completed',
-      transactionId: generateTransactionId()
+      transactionId: generateTransactionId(paymentMethod)
     });
     
     const savedPayment = await newPayment.save();
@@ -235,11 +235,245 @@ exports.getAllPayments = async (req, res) => {
 // Helper function to simulate payment processing
 function simulatePaymentProcessing(paymentMethod, cardDetails) {
   // In a real application, this would integrate with a payment gateway
-  // For now, we'll just return true to simulate successful payment
-  return true;
+  
+  // Different payment methods handling logic
+  switch(paymentMethod) {
+    case 'credit_card':
+    case 'debit_card':
+      // Validate card details (this is a simulation)
+      if (!cardDetails) {
+        console.log('Missing card details');
+        return false;
+      }
+      
+      // Check for required card fields
+      const requiredFields = ['cardNumber', 'cardHolderName', 'expiryDate', 'cvv'];
+      for (const field of requiredFields) {
+        if (!cardDetails[field]) {
+          console.log(`Missing card field: ${field}`);
+          return false;
+        }
+      }
+      
+      // Simulate card validation logic
+      const cardNumber = cardDetails.cardNumber.replace(/\s/g, '');
+      if (cardNumber.length !== 16 || isNaN(cardNumber)) {
+        console.log('Invalid card number');
+        return false;
+      }
+      
+      // Simulate CVV validation
+      if (cardDetails.cvv.length < 3 || isNaN(cardDetails.cvv)) {
+        console.log('Invalid CVV');
+        return false;
+      }
+      
+      // Simulate expiry date validation (MM/YY format)
+      const expiryParts = cardDetails.expiryDate.split('/');
+      if (expiryParts.length !== 2) {
+        console.log('Invalid expiry date format');
+        return false;
+      }
+      
+      const expiryMonth = parseInt(expiryParts[0], 10);
+      const expiryYear = parseInt(expiryParts[1], 10) + 2000; // Assuming YY format
+      
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1; // JavaScript months are 0-based
+      
+      if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
+        console.log('Card expired');
+        return false;
+      }
+      
+      // Simulate successful card processing (95% success rate)
+      return Math.random() < 0.95;
+      
+    case 'paypal':
+      // Simulate PayPal processing
+      if (!cardDetails || !cardDetails.paypalEmail) {
+        console.log('Missing PayPal email');
+        return false;
+      }
+      
+      // Validate email format (simple validation)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cardDetails.paypalEmail)) {
+        console.log('Invalid PayPal email format');
+        return false;
+      }
+      
+      // Simulate successful PayPal processing (90% success rate)
+      return Math.random() < 0.9;
+      
+    case 'cash':
+      // Cash payments always succeed in our simulation
+      return true;
+      
+    default:
+      console.log(`Unsupported payment method: ${paymentMethod}`);
+      return false;
+  }
 }
 
 // Helper function to generate a mock transaction ID
-function generateTransactionId() {
-  return 'TXN' + Date.now() + Math.floor(Math.random() * 1000000);
+function generateTransactionId(paymentMethod = 'unknown') {
+  const prefix = {
+    'credit_card': 'CC',
+    'debit_card': 'DC',
+    'paypal': 'PP',
+    'cash': 'CSH',
+    'unknown': 'TXN'
+  };
+  
+  // Get prefix for payment method or use default
+  const paymentPrefix = prefix[paymentMethod] || 'TXN';
+  
+  // Generate a unique transaction ID
+  return `${paymentPrefix}${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 }
+
+// Get available payment methods
+exports.getPaymentMethods = async (req, res) => {
+  try {
+    const paymentMethods = [
+      {
+        id: 'credit_card',
+        name: 'Credit Card',
+        description: 'Pay with Visa, MasterCard, or American Express',
+        requiresAdditionalInfo: true,
+        icon: 'credit-card'
+      },
+      {
+        id: 'debit_card',
+        name: 'Debit Card',
+        description: 'Pay with your bank debit card',
+        requiresAdditionalInfo: true,
+        icon: 'debit-card'
+      },
+      {
+        id: 'paypal',
+        name: 'PayPal',
+        description: 'Pay with your PayPal account',
+        requiresAdditionalInfo: true,
+        icon: 'paypal'
+      },
+      {
+        id: 'cash',
+        name: 'Cash',
+        description: 'Pay at the theater',
+        requiresAdditionalInfo: false,
+        icon: 'cash'
+      }
+    ];
+    
+    res.status(200).json(paymentMethods);
+  } catch (error) {
+    console.error('Error fetching payment methods:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Validate credit/debit card
+exports.validateCard = async (req, res) => {
+  try {
+    const { 
+      cardNumber, 
+      cardHolderName, 
+      expiryDate, 
+      cvv 
+    } = req.body;
+    
+    // Basic validation
+    if (!cardNumber || !cardHolderName || !expiryDate || !cvv) {
+      return res.status(400).json({ 
+        valid: false, 
+        message: 'Missing required card details',
+        errors: {}
+      });
+    }
+    
+    const errors = {};
+    let valid = true;
+    
+    // Validate card number (basic Luhn algorithm check)
+    const cardNumberClean = cardNumber.replace(/\s/g, '');
+    if (cardNumberClean.length !== 16 || isNaN(cardNumberClean)) {
+      errors.cardNumber = 'Invalid card number';
+      valid = false;
+    }
+    
+    // Validate CVV
+    if (cvv.length < 3 || isNaN(cvv)) {
+      errors.cvv = 'Invalid security code';
+      valid = false;
+    }
+    
+    // Validate expiry date
+    const expiryParts = expiryDate.split('/');
+    if (expiryParts.length !== 2) {
+      errors.expiryDate = 'Invalid expiry date format (use MM/YY)';
+      valid = false;
+    } else {
+      const expiryMonth = parseInt(expiryParts[0], 10);
+      const expiryYear = parseInt(expiryParts[1], 10) + 2000; // Assuming YY format
+      
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      
+      if (expiryMonth < 1 || expiryMonth > 12) {
+        errors.expiryDate = 'Invalid month';
+        valid = false;
+      } else if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
+        errors.expiryDate = 'Card is expired';
+        valid = false;
+      }
+    }
+    
+    // Return validation result
+    res.status(200).json({
+      valid,
+      message: valid ? 'Card is valid' : 'Invalid card details',
+      errors: Object.keys(errors).length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    console.error('Error validating card:', error);
+    res.status(500).json({ 
+      valid: false,
+      message: 'Server error validating card'
+    });
+  }
+};
+
+// Validate PayPal information
+exports.validatePayPal = async (req, res) => {
+  try {
+    const { paypalEmail } = req.body;
+    
+    // Basic validation
+    if (!paypalEmail) {
+      return res.status(400).json({ 
+        valid: false, 
+        message: 'PayPal email is required' 
+      });
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const valid = emailRegex.test(paypalEmail);
+    
+    // Return validation result
+    res.status(200).json({
+      valid,
+      message: valid ? 'PayPal email is valid' : 'Invalid PayPal email format'
+    });
+  } catch (error) {
+    console.error('Error validating PayPal information:', error);
+    res.status(500).json({ 
+      valid: false,
+      message: 'Server error validating PayPal information'
+    });
+  }
+};
