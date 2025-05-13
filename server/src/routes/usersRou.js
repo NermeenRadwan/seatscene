@@ -1,54 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const userController = require('../controllers/userCon');
+const { authenticateJWT, isAdmin } = require('../middleware/auth');
+const User = require('../models/UserMod');
 
-// Register a new user
-router.post('/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+// Public routes
+router.post('/register', userController.registerUser);
+router.post('/login', userController.loginUser);
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ 
-        message: 'User already exists with this email or username' 
-      });
-    }
-
-    // Create new user
-    const newUser = new User({
-      username,
-      email,
-      password // Note: In a real application, you should hash the password
-    });
-
-    // Save user to database
-    const savedUser = await newUser.save();
-
-    // Return user data (excluding password)
-    res.status(201).json({
-      message: 'User registered successfully',
-      user: {
-        id: savedUser._id,
-        username: savedUser.username,
-        email: savedUser.email,
-        createdAt: savedUser.createdAt
-      }
-    });
-
-  } catch (error) {
-    res.status(500).json({ 
-      message: 'Error registering user',
-      error: error.message 
-    });
-  }
-});
-
-// Get user profile
-router.get('/profile/:id', async (req, res) => {
+// Profile route - must be before the generic /:id route
+router.get('/profile/:id', authenticateJWT, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
@@ -62,5 +23,13 @@ router.get('/profile/:id', async (req, res) => {
     });
   }
 });
+
+// Protected routes (require authentication)
+router.get('/:id', authenticateJWT, userController.getUserById);
+router.put('/:id', authenticateJWT, userController.updateUser);
+
+// Admin only routes
+router.get('/', authenticateJWT, isAdmin, userController.getAllUsers);
+router.delete('/:id', authenticateJWT, isAdmin, userController.deleteUser);
 
 module.exports = router; 
