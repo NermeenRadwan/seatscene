@@ -1,0 +1,226 @@
+.ticket-confirmation-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #282c34;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.ticket-logo {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: 80px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.ticket-logo:hover {
+  transform: scale(1.05);
+}
+
+.ticket-card {
+  background-color: white;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+.ticket-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(to right, #9c27b0, #00c2cb);
+}
+
+.ticket-header {
+  background-color: #f8f8f8;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #ddd;
+}
+
+.ticket-header h1 {
+  color: #333;
+  font-size: 24px;
+  margin: 0;
+  font-family: 'Berkshire Swash', cursive;
+}
+
+.notification-badge {
+  display: flex;
+  align-items: center;
+  background-color: #4CAF50;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.notification-icon {
+  margin-right: 6px;
+  font-style: normal;
+}
+
+.ticket-details {
+  padding: 20px;
+}
+
+.ticket-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.ticket-type {
+  font-size: 16px;
+  color: #777;
+  margin-bottom: 20px;
+}
+
+.ticket-info-row {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.ticket-info-item {
+  flex: 1;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.value {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.ticket-id {
+  margin-top: 20px;
+  text-align: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+}
+
+.ticket-id .label {
+  color: #666;
+  display: inline;
+  margin-right: 10px;
+}
+
+.ticket-id .value {
+  font-weight: bold;
+  color: #9c27b0;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.qr-code {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: 1px dashed #ddd;
+  background-color: #fafafa;
+}
+
+.qr-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #eee;
+  background-image: linear-gradient(45deg, #ddd 25%, transparent 25%),
+                    linear-gradient(-45deg, #ddd 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, #ddd 75%),
+                    linear-gradient(-45deg, transparent 75%, #ddd 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  margin-bottom: 10px;
+}
+
+.qr-code p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.ticket-footer {
+  background-color: #f0f0f0;
+  padding: 15px 20px;
+  text-align: center;
+  border-top: 1px solid #eee;
+}
+
+.ticket-footer p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.ticket-footer .small {
+  font-size: 12px;
+  color: #999;
+}
+
+.home-button {
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-family: 'Berkshire Swash', cursive;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 0 10px;
+}
+
+.home-button:hover {
+  background-color: #7b1fa2;
+  transform: scale(1.05);
+}
+
+.confirmation-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.profile-button {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 2px solid #9c27b0;
+  border-radius: 25px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-family: 'Berkshire Swash', cursive;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 0 10px;
+}
+
+.profile-button:hover {
+  background-color: rgba(156, 39, 176, 0.3);
+  transform: scale(1.05);
+} 

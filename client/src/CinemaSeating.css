@@ -1,0 +1,301 @@
+.seating-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #282c34;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.seating-logo {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: 80px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.seating-logo:hover {
+  transform: scale(1.05);
+}
+
+.seating-title {
+  color: white;
+  font-family: 'Berkshire Swash', cursive;
+  font-size: 36px;
+  margin-top: 60px;
+  margin-bottom: 10px;
+}
+
+.movie-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.movie-info {
+  color: #ddd;
+  font-size: 20px;
+  margin-bottom: 5px;
+  margin-top: 0;
+  font-family: 'Berkshire Swash', cursive;
+}
+
+.showtime-info {
+  color: #00c2cb;
+  font-size: 18px;
+  margin-top: 5px;
+  margin-bottom: 0;
+  font-weight: bold;
+}
+
+/* Screen */
+.screen-container {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.screen {
+  width: 80%;
+  height: 40px;
+  background-color: #ddd;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #333;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  transform: perspective(200px) rotateX(-10deg);
+}
+
+/* Seating chart */
+.seating-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 10px;
+}
+
+.seat-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.row-label {
+  width: 30px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+}
+
+.seat {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4a90e2;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.seat:hover:not(.unavailable) {
+  transform: scale(1.1);
+  background-color: #5da0f2;
+}
+
+.seat.selected {
+  background-color: #00c2cb;
+  box-shadow: 0 0 10px #00c2cb;
+}
+
+.seat.unavailable {
+  background-color: #666;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.seat.vip {
+  background-color: #ffc107;
+  color: #333;
+  border: 1px solid #e0a800;
+}
+
+.seat.vip:hover:not(.unavailable) {
+  background-color: #ffca2c;
+  transform: scale(1.1);
+}
+
+.seat.vip.selected {
+  background-color: #ff9800;
+  box-shadow: 0 0 10px #ff9800;
+}
+
+.row-label.vip-label {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.vip-price {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.price-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+/* Legend */
+.seat-legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+}
+
+.legend-item .seat {
+  cursor: default;
+  width: 20px;
+  height: 20px;
+}
+
+.legend-item .seat.available {
+  background-color: #4a90e2;
+}
+
+.legend-item .seat:hover {
+  transform: none;
+}
+
+/* Selection summary */
+.selection-summary {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 15px 30px;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.selected-seats-label {
+  margin-bottom: 10px;
+}
+
+.price-summary {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.price-per-seat {
+  font-size: 14px;
+  color: #aaa;
+  margin-top: 0;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.back-button, .confirm-button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 25px;
+  font-size: 18px;
+  font-family: 'Berkshire Swash', cursive;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.back-button {
+  background-color: #666;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #777;
+  transform: scale(1.05);
+}
+
+.confirm-button {
+  background-color: #00c2cb;
+  color: black;
+}
+
+.confirm-button:hover:not(:disabled) {
+  background-color: #00a7af;
+  transform: scale(1.05);
+}
+
+.confirm-button:disabled {
+  background-color: #555;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.seating-placeholder {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 40px;
+  width: 80%;
+  max-width: 800px;
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.seating-placeholder p {
+  margin: 10px 0;
+}
+
+.continue-button {
+  background-color: #00c2cb;
+  color: black;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-family: 'Berkshire Swash', cursive;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-top: 20px;
+}
+
+.continue-button:hover {
+  background-color: #00a7af;
+  transform: scale(1.05);
+} 

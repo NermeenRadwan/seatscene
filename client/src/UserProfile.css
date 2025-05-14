@@ -1,0 +1,429 @@
+.profile-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #282c34;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.profile-logo {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: 80px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.profile-logo:hover {
+  transform: scale(1.05);
+}
+
+.profile-content {
+  max-width: 1200px;
+  margin: 80px auto 0;
+  display: flex;
+  gap: 30px;
+}
+
+/* Sidebar with user details */
+.profile-sidebar {
+  width: 300px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-image-container {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 3px solid #9c27b0;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-details {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.user-name {
+  color: white;
+  font-size: 24px;
+  margin: 0 0 10px;
+  text-align: center;
+  font-family: 'Berkshire Swash', cursive;
+}
+
+.user-email, .user-phone, .join-date {
+  color: #bbb;
+  font-size: 14px;
+  margin: 5px 0;
+  text-align: center;
+}
+
+.continue-booking-button {
+  width: 100%;
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 0;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-bottom: 10px;
+  font-family: 'Berkshire Swash', cursive;
+}
+
+.logout-button {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 0;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.continue-booking-button:hover {
+  background-color: #7b1fa2;
+  transform: scale(1.02);
+}
+
+.logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Bookings section */
+.bookings-container {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 20px;
+  min-height: 600px;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-button {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.3s;
+  position: relative;
+}
+
+.tab-button.active {
+  color: white;
+}
+
+.tab-button.active:after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #9c27b0;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 700px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Scrollbar styling */
+.bookings-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bookings-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.bookings-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.bookings-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Booking cards */
+.booking-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  transition: transform 0.2s;
+  border-left: 3px solid #9c27b0;
+}
+
+.booking-card:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.booking-type {
+  color: #9c27b0;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.booking-id {
+  color: #777;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.booking-title {
+  color: white;
+  font-size: 18px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.booking-details {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.booking-detail-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.booking-detail-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-detail-item.full-width {
+  width: 100%;
+}
+
+.detail-label {
+  color: #999;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.detail-value {
+  color: white;
+  font-size: 14px;
+}
+
+.cancel-booking-button {
+  width: 100%;
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 0;
+  margin-top: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.cancel-booking-button:hover {
+  background-color: rgba(220, 53, 69, 1);
+  transform: scale(1.02);
+}
+
+/* Refund Modal */
+.refund-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.refund-modal {
+  background-color: #282c34;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 25px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  color: white;
+}
+
+.refund-modal h2 {
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-family: 'Berkshire Swash', cursive;
+  text-align: center;
+  border-bottom: 1px solid #444;
+  padding-bottom: 15px;
+}
+
+.refund-modal h3 {
+  color: #fff;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.booking-summary {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.booking-title-modal {
+  font-size: 18px;
+  font-weight: bold;
+  color: #9c27b0;
+  margin-top: 0;
+}
+
+.booking-summary p {
+  margin: 5px 0;
+  color: #ccc;
+}
+
+.refund-options p {
+  margin: 10px 0;
+  color: #aaa;
+}
+
+.refund-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.refund-button, .no-refund-button, .keep-booking-button {
+  padding: 12px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Berkshire Swash', cursive;
+}
+
+.refund-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.refund-button:hover {
+  background-color: #218838;
+  transform: scale(1.02);
+}
+
+.no-refund-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.no-refund-button:hover {
+  background-color: #c82333;
+  transform: scale(1.02);
+}
+
+.keep-booking-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.keep-booking-button:hover {
+  background-color: #5a6268;
+  transform: scale(1.02);
+}
+
+.refund-note {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Empty state */
+.no-bookings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #999;
+  text-align: center;
+}
+
+.book-now-button {
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-top: 15px;
+  font-family: 'Berkshire Swash', cursive;
+}
+
+.book-now-button:hover {
+  background-color: #7b1fa2;
+  transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .profile-content {
+    flex-direction: column;
+  }
+  
+  .profile-sidebar {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+} 

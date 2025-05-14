@@ -1,42 +1,34 @@
+// models/Theater.js
+
 const mongoose = require('mongoose');
 
 const theaterSchema = new mongoose.Schema({
-  name: {
+  id: {
+    type: Number,
+    required: true,
+    unique: true
+  },
+  image: {
+    type: String,
+    required: true
+  },
+  title: {
     type: String,
     required: true,
     trim: true
   },
-  location: {
-    type: String,
+  showtimes: {
+    type: [String],  // Array of time strings
     required: true,
-    trim: true
-  },
-  capacity: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  amenities: {
-    type: [String],
-    default: []
-  },
-  seatLayout: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'SeatLayout'
-  },
-  screens: {
-    type: Number,
-    default: 1
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+    validate: [arrayLimit, '{PATH} must have at least one showtime']
   }
+}, {
+  timestamps: true
 });
 
-const Theater = mongoose.model('Theater', theaterSchema);
-module.exports = Theater;
+// Custom validator to ensure at least one showtime is provided
+function arrayLimit(val) {
+  return val.length > 0;
+}
+
+module.exports = mongoose.model('Theater', theaterSchema);

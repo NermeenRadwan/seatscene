@@ -1,5 +1,10 @@
 const Booking = require('../models/BookingMod');
 const User = require('../models/UserMod');
+const { Booking: BookingDecorator, VIPSeatingDecorator, FoodBeverageDecorator, ParkingPassDecorator } = require('../decorators/bookingDec');
+const { bookingNotifier } = require('../observers/bookingObs');
+const paymentFacade = require('../facades/paymentFac');
+const movieFactory = require('../factories/movieFact');
+const theaterFactory = require('../factories/theaterFact');
 
 // Get all bookings (admin only)
 exports.getAllBookings = async (req, res) => {
@@ -67,25 +72,75 @@ exports.getUserBookings = async (req, res) => {
 exports.createBooking = async (req, res) => {
   try {
     const { 
-      movie, 
-      theater, 
+      movie: movieId, 
+      theater: theaterId, 
       showtime, 
-      seats, 
-      totalPrice,
-      paymentMethod 
+      seats,
+      paymentMethod,
+      paymentDetails,
+      isVIP,
+      foodOptions,
+      parkingPass
     } = req.body;
     
-    // Create new booking
+    // Create base booking using Decorator pattern
+    let bookingData = {
+      movieId,
+      userId: req.user.id,
+      theaterId,
+      showtime,
+      seats
+    };
+    
+    // Start with base booking
+    let decoratedBooking = new BookingDecorator(bookingData);
+    
+    // Apply decorators based on options
+    if (isVIP) {
+      decoratedBooking = new VIPSeatingDecorator(decoratedBooking);
+    }
+    
+    if (foodOptions && foodOptions.length > 0) {
+      decoratedBooking = new FoodBeverageDecorator(decoratedBooking, foodOptions);
+    }
+    
+    if (parkingPass) {
+      decoratedBooking = new ParkingPassDecorator(decoratedBooking);
+    }
+    
+    // Get final booking details with all decorators applied
+    const bookingDetails = decoratedBooking.getBookingDetails();
+    
+    // Process payment using Facade pattern
+    const paymentResult = paymentFacade.processPayment(
+      paymentMethod || 'credit_card',
+      bookingDetails.totalPrice,
+      paymentDetails
+    );
+    
+    if (!paymentResult.success) {
+      return res.status(400).json({ 
+        message: 'Payment failed', 
+        error: paymentResult.error 
+      });
+    }
+    
+    // Create new booking in database
     const newBooking = new Booking({
       user: req.user.id,
-      movie,
-      theater,
+      movie: movieId,
+      theater: theaterId,
       showtime,
       seats,
-      totalPrice,
+      totalPrice: bookingDetails.totalPrice,
+      description: bookingDetails.description,
       paymentMethod: paymentMethod || 'credit_card',
+      paymentTransactionId: paymentResult.transactionId,
       status: 'confirmed',
-      paymentStatus: 'completed'
+      paymentStatus: 'completed',
+      vipSeating: bookingDetails.vipSeating || false,
+      foodOptions: bookingDetails.foodOptions || [],
+      parkingIncluded: bookingDetails.parkingIncluded || false
     });
     
     const savedBooking = await newBooking.save();
@@ -97,13 +152,17 @@ exports.createBooking = async (req, res) => {
     );
     
     const populatedBooking = await Booking.findById(savedBooking._id)
+      .populate('user', '-password')
       .populate('movie')
       .populate('theater');
+    
+    // Notify observers about the new booking
+    bookingNotifier.notify(populatedBooking);
     
     res.status(201).json(populatedBooking);
   } catch (error) {
     console.error('Error creating booking:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -201,15 +260,17 @@ exports.cancelBooking = async (req, res) => {
       return res.status(400).json({ message: 'Booking is already cancelled' });
     }
     
-    // Update booking status to cancelled
+    // Update booking status
     booking.status = 'cancelled';
     await booking.save();
     
-    const updatedBooking = await Booking.findById(bookingId)
-      .populate('movie')
-      .populate('theater');
+    // Notify observers about the cancelled booking
+    bookingNotifier.notify({
+      ...booking.toObject(),
+      cancellationTime: new Date()
+    });
     
-    res.status(200).json(updatedBooking);
+    res.status(200).json({ message: 'Booking cancelled successfully', booking });
   } catch (error) {
     console.error('Error cancelling booking:', error);
     res.status(500).json({ message: 'Server error' });

@@ -1,0 +1,10 @@
+Please add the following payment method icons to this directory:
+
+1. fawry.png - Fawry logo
+2. accept.png - Accept Kiosks logo
+3. instapay.png - InstaPay logo
+4. paypal.png - PayPal logo
+5. visa.png - Visa logo
+6. mastercard.png - Mastercard logo
+
+These should be clean, recognizable logos with a white background to match the design. 

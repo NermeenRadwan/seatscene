@@ -1,0 +1,19 @@
+.nav-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  padding: 10px;
+}
+
+.nav-logo {
+  width: 100px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: block;
+}
+
+.nav-logo:hover {
+  transform: scale(1.05);
+} 
