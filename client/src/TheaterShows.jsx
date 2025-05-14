@@ -97,7 +97,7 @@ function TheaterShows() {
     <div className="theater-container">
       {/* Logo in the corner */}
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
         className="theater-logo" 
         onClick={handleLogoClick}

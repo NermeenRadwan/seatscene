@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { getMovieById, getTheaterById } from './services/api';
 import './TheaterSeating.css';
 
 function TheaterSeating() {
   const navigate = useNavigate();
-  const { showId } = useParams();
+  const { movieId, theaterId } = useParams();
   const location = useLocation();
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showTitle, setShowTitle] = useState('');
   const [showtime, setShowtime] = useState('');
+  const [movie, setMovie] = useState(null);
+  const [theater, setTheater] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isVIP, setIsVIP] = useState(false);
+  const [includeParkingPass, setIncludeParkingPass] = useState(false);
 
   // Get the selected time from the URL query params
   useEffect(() => {
@@ -17,23 +24,40 @@ function TheaterSeating() {
     if (timeParam) {
       setShowtime(timeParam);
     }
-  }, [location.search]);
-
-  // Define show data - in a real app this would come from a database
-  const showData = {
-    1: { title: 'Show 1', price: 250, vipPrice: 400 },
-    2: { title: 'Show 2', price: 250, vipPrice: 400 },
-    3: { title: 'Show 3', price: 300, vipPrice: 450 },
-    4: { title: 'Show 4', price: 300, vipPrice: 450 },
-    5: { title: 'Show 5', price: 280, vipPrice: 420 }
-  };
-
-  // Set show title when component mounts
-  useEffect(() => {
-    if (showData[showId]) {
-      setShowTitle(showData[showId].title);
-    }
-  }, [showId]);
+    
+    // Fetch movie and theater data
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch movie details
+        if (movieId) {
+          const movieResult = await getMovieById(movieId);
+          if (movieResult.success) {
+            setMovie(movieResult.data);
+            setShowTitle(movieResult.data.title);
+          } else {
+            setError(movieResult.error || 'Failed to fetch movie details');
+          }
+        }
+        
+        // Fetch theater details
+        if (theaterId) {
+          const theaterResult = await getTheaterById(theaterId);
+          if (theaterResult.success) {
+            setTheater(theaterResult.data);
+          } else {
+            setError(theaterResult.error || 'Failed to fetch theater details');
+          }
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [movieId, theaterId, location.search]);
 
   // Theater has a different seating layout than cinema
   // Orchestra section (rows A-G)
@@ -80,6 +104,11 @@ function TheaterSeating() {
         return [...prev, seatId];
       }
     });
+    
+    // If selecting VIP seats, automatically set isVIP to true
+    if (isVipSeat(seatId) && !isVIP) {
+      setIsVIP(true);
+    }
   };
 
   // Go back to shows page
@@ -146,14 +175,27 @@ function TheaterSeating() {
     ));
   };
 
-  // Calculate total price with VIP pricing
+  // Calculate base ticket price
+  const getBaseTicketPrice = () => {
+    return movie?.ticketPrice || 10.00;
+  };
+
+  // Calculate total price with VIP pricing and other options
   const calculateTotalPrice = () => {
-    return selectedSeats.reduce((total, seatId) => {
-      const price = isVipSeat(seatId) 
-        ? showData[showId]?.vipPrice || 400 
-        : showData[showId]?.price || 250;
-      return total + price;
-    }, 0);
+    const basePrice = getBaseTicketPrice();
+    let total = selectedSeats.length * basePrice;
+    
+    // Add VIP surcharge if isVIP is true (using Decorator pattern on server)
+    if (isVIP) {
+      total += selectedSeats.length * 5; // $5 per seat VIP surcharge
+    }
+    
+    // Add parking pass if selected (using Decorator pattern on server)
+    if (includeParkingPass) {
+      total += 8; // $8 parking fee
+    }
+    
+    return total;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -175,115 +217,168 @@ function TheaterSeating() {
   const handleConfirmSelection = () => {
     if (selectedSeats.length === 0) return;
     
-    // Navigate to payment page with relevant info
-    navigate(`/payment?source=theater&id=${showId}&time=${encodeURIComponent(showtime)}&seats=${encodeURIComponent(selectedSeats.join(', '))}&price=${totalPrice}`);
+    // Navigate to payment page with relevant info and decorator options
+    navigate('/payment', { 
+      state: {
+        movieId: movieId,
+        theaterId: theaterId,
+        showtime: showtime,
+        seats: selectedSeats,
+        price: totalPrice,
+        // Decorator pattern options
+        isVIP: isVIP,
+        parkingPass: includeParkingPass,
+        // Additional info
+        movieTitle: movie?.title,
+        theaterName: theater?.name
+      }
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="theater-seating-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading seating chart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="theater-seating-container">
+        <div className="error-message">
+          <p>Error: {error}</p>
+          <button onClick={handleLogoClick}>Go Back</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="theater-seating-container">
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
-        className="theater-logo" 
-        onClick={handleLogoClick}
-        title="Go back"
+        className="theater-seating-logo"
+        onClick={() => navigate('/theater/shows')}
       />
       
       <h1 className="theater-title">Select Seats</h1>
       <div className="show-details">
         <p className="show-info">{showTitle}</p>
         {showtime && <p className="showtime-info">Time: {showtime}</p>}
+        {theater && <p className="theater-info">Theater: {theater.name}</p>}
       </div>
       
       <div className="stage-container">
         <div className="stage">STAGE</div>
       </div>
       
-      <div className="seating-sections">
-        {/* Orchestra section */}
-        <div className="section-label">Orchestra <span className="vip-notice">(Rows A-B are VIP)</span></div>
+      <div className="seating-chart">
         <div className="orchestra-section">
+          <h3 className="section-title">Orchestra</h3>
           {renderOrchestraSeats()}
         </div>
         
-        {/* Divider between sections */}
-        <div className="section-divider"></div>
-        
-        {/* Balcony section */}
-        <div className="section-label">Balcony</div>
         <div className="balcony-section">
+          <h3 className="section-title">Balcony</h3>
           {renderBalconySeats()}
         </div>
       </div>
       
       <div className="seat-legend">
         <div className="legend-item">
-          <div className="seat orchestra available"></div>
-          <span>Orchestra</span>
+          <div className="seat-example available"></div>
+          <span>Available</span>
         </div>
         <div className="legend-item">
-          <div className="seat orchestra vip"></div>
-          <span>VIP</span>
-        </div>
-        <div className="legend-item">
-          <div className="seat balcony available"></div>
-          <span>Balcony</span>
-        </div>
-        <div className="legend-item">
-          <div className="seat selected"></div>
+          <div className="seat-example selected"></div>
           <span>Selected</span>
         </div>
         <div className="legend-item">
-          <div className="seat unavailable"></div>
+          <div className="seat-example unavailable"></div>
           <span>Unavailable</span>
+        </div>
+        <div className="legend-item">
+          <div className="seat-example vip"></div>
+          <span>VIP</span>
+        </div>
+      </div>
+      
+      <div className="booking-options">
+        <div className="option-item">
+          <input 
+            type="checkbox" 
+            id="vip-option" 
+            checked={isVIP} 
+            onChange={e => setIsVIP(e.target.checked)}
+            disabled={vipSeatsCount > 0} // Disable if VIP seats are selected
+          />
+          <label htmlFor="vip-option">VIP Experience (+5 EGP per seat)</label>
+        </div>
+        
+        <div className="option-item">
+          <input 
+            type="checkbox" 
+            id="parking-option" 
+            checked={includeParkingPass} 
+            onChange={e => setIncludeParkingPass(e.target.checked)}
+          />
+          <label htmlFor="parking-option">Add Parking Pass (+8 EGP)</label>
         </div>
       </div>
       
       <div className="selection-summary">
-        <p className="selected-seats-label">
-          {selectedSeats.length > 0 
-            ? `Selected seats: ${selectedSeats.sort().join(', ')}` 
-            : 'No seats selected'}
-        </p>
-        <p className="price-summary">
-          Total: {formatPrice(totalPrice)}
-        </p>
-        {selectedSeats.length > 0 && (
-          <div className="price-breakdown">
+        <h3>Your Selection</h3>
+        {selectedSeats.length > 0 ? (
+          <>
+            <p>
+              <strong>Seats:</strong> {selectedSeats.join(', ')}
+            </p>
             {vipSeatsCount > 0 && (
-              <p className="price-per-seat vip-price">
-                VIP: {vipSeatsCount} × {formatPrice(showData[showId]?.vipPrice || 400)}
+              <p>
+                <strong>VIP Seats:</strong> {vipSeatsCount}
               </p>
             )}
             {orchestraSeatsCount > 0 && (
-              <p className="price-per-seat">
-                Orchestra: {orchestraSeatsCount} × {formatPrice(showData[showId]?.price || 250)}
+              <p>
+                <strong>Orchestra Seats:</strong> {orchestraSeatsCount}
               </p>
             )}
             {balconySeatsCount > 0 && (
-              <p className="price-per-seat">
-                Balcony: {balconySeatsCount} × {formatPrice(showData[showId]?.price || 250)}
+              <p>
+                <strong>Balcony Seats:</strong> {balconySeatsCount}
               </p>
             )}
-          </div>
+            {isVIP && (
+              <p>
+                <strong>VIP Experience:</strong> Yes (+5 EGP per seat)
+              </p>
+            )}
+            {includeParkingPass && (
+              <p>
+                <strong>Parking Pass:</strong> Yes (+8 EGP)
+              </p>
+            )}
+            <p className="total-price">
+              <strong>Total Price:</strong> {formatPrice(totalPrice)}
+            </p>
+          </>
+        ) : (
+          <p>No seats selected</p>
         )}
       </div>
       
-      <div className="action-buttons">
-        <button 
-          className="back-button" 
-          onClick={() => navigate(-1)}
-        >
-          Back to Shows
-        </button>
-        <button 
-          className="confirm-button" 
-          disabled={selectedSeats.length === 0}
-          onClick={handleConfirmSelection}
-        >
-          Confirm Selection
-        </button>
-      </div>
+      <button 
+        className="confirm-button"
+        onClick={handleConfirmSelection}
+        disabled={selectedSeats.length === 0}
+      >
+        Confirm Selection
+      </button>
     </div>
   );
 }

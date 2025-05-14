@@ -298,4 +298,17 @@
 .continue-button:hover {
   background-color: #00a7af;
   transform: scale(1.05);
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-bottom: 2rem;
+}
+
+.logo:hover {
+  transform: scale(1.05);
 } 

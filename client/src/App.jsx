@@ -13,6 +13,7 @@ import CardDetails from './CardDetails';
 import TicketConfirmation from './TicketConfirmation';
 import UserProfile from './UserProfile';
 import AdminDashboard from './AdminDashboard';
+import ConnectionStatus from './components/ConnectionStatus';
 
 // Button component with navigation
 function ContinueButton() {
@@ -35,7 +36,7 @@ function Home() {
     <div className="App">
       <header className="App-header">
         <img 
-          src="/ArtboVard 1@4x.png" 
+          src="/Artboard 1@4x.png" 
           className="App-logo" 
           alt="logo" 
           style={{ maxWidth: '300px', height: 'auto', animation: 'none' }}
@@ -70,6 +71,7 @@ function App() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
+      <ConnectionStatus />
     </Router>
   );
 }

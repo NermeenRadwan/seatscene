@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { createBooking } from './services/api';
 import './PaymentMethod.css';
 
 function PaymentMethod() {
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedMethod, setSelectedMethod] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
   
-  // Get the query parameters
-  const queryParams = new URLSearchParams(location.search);
-  const source = queryParams.get('source') || '';
-  const id = queryParams.get('id') || '';
-  const time = queryParams.get('time') || '';
-  const seats = queryParams.get('seats') || '';
-  const price = queryParams.get('price') || '0';
+  // Get booking data from location state (passed from TheaterSeating)
+  const bookingData = location.state || {};
   
   const handleLogoClick = () => {
     navigate(-1); // Go back to previous page
@@ -21,22 +19,86 @@ function PaymentMethod() {
 
   const handlePaymentSelect = (method) => {
     setSelectedMethod(method);
+    setError(null);
   };
 
-  const handleContinue = () => {
+  const mapPaymentMethodToAPI = (method) => {
+    // Map UI payment methods to API payment methods
+    switch(method) {
+      case 'visa':
+      case 'mastercard':
+        return 'credit_card';
+      case 'paypal':
+        return 'paypal';
+      case 'vodaCash':
+        return 'mobile_payment';
+      case 'fawry':
+      case 'acceptKiosk':
+        return 'payment_service';
+      default:
+        return 'credit_card';
+    }
+  };
+
+  const handleContinue = async () => {
     if (!selectedMethod) {
-      alert('Please select a payment method');
+      setError('Please select a payment method');
       return;
     }
     
-    // Navigate to card details page with payment information
-    navigate(`/card-details?method=${selectedMethod}&price=${price}&source=${source}`);
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      // Create a booking with the decorator pattern options
+      const bookingPayload = {
+        movie: bookingData.movieId,
+        theater: bookingData.theaterId,
+        showtime: bookingData.showtime,
+        seats: bookingData.seats,
+        // Decorator pattern options
+        isVIP: bookingData.isVIP,
+        parkingPass: bookingData.parkingPass,
+        // Payment details
+        paymentMethod: mapPaymentMethodToAPI(selectedMethod),
+        paymentDetails: {
+          // These would be collected on the next screen in a real app
+          // For now, we'll use dummy data
+          cardNumber: '4111111111111111',
+          expiryDate: '12/25',
+          cvv: '123',
+          email: 'user@example.com',
+          token: 'sample-token'
+        }
+      };
+      
+      // Create booking (which will use the facade pattern on the server)
+      const result = await createBooking(bookingPayload);
+      
+      if (result.success) {
+        // Navigate to confirmation page
+        navigate('/ticket-confirmation', { 
+          state: {
+            booking: result.data,
+            movieTitle: bookingData.movieTitle,
+            theaterName: bookingData.theaterName,
+            paymentMethod: selectedMethod
+          }
+        });
+      } else {
+        setError(result.error || 'Failed to process booking');
+      }
+    } catch (err) {
+      setError(err.message || 'An unexpected error occurred');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
     <div className="payment-container">
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
         className="payment-logo" 
         onClick={handleLogoClick}
@@ -44,6 +106,8 @@ function PaymentMethod() {
       />
       
       <h1 className="payment-title">Choose your payment method:</h1>
+      
+      {error && <div className="payment-error">{error}</div>}
       
       <div className="payment-card">
         <div className="payment-methods">
@@ -93,16 +157,36 @@ function PaymentMethod() {
       
       <div className="payment-details">
         <p className="payment-info">
-          Total: <span className="highlight">{price} EGP</span>
+          Total: <span className="highlight">{bookingData.price} EGP</span>
         </p>
-        {seats && (
+        {bookingData.seats && (
           <p className="payment-info">
-            Seats: <span className="highlight">{seats}</span>
+            Seats: <span className="highlight">{bookingData.seats.join(', ')}</span>
           </p>
         )}
-        {time && (
+        {bookingData.showtime && (
           <p className="payment-info">
-            Time: <span className="highlight">{time}</span>
+            Time: <span className="highlight">{bookingData.showtime}</span>
+          </p>
+        )}
+        {bookingData.movieTitle && (
+          <p className="payment-info">
+            Movie: <span className="highlight">{bookingData.movieTitle}</span>
+          </p>
+        )}
+        {bookingData.theaterName && (
+          <p className="payment-info">
+            Theater: <span className="highlight">{bookingData.theaterName}</span>
+          </p>
+        )}
+        {bookingData.isVIP && (
+          <p className="payment-info">
+            VIP Experience: <span className="highlight">Yes</span>
+          </p>
+        )}
+        {bookingData.parkingPass && (
+          <p className="payment-info">
+            Parking Pass: <span className="highlight">Yes</span>
           </p>
         )}
       </div>
@@ -110,9 +194,9 @@ function PaymentMethod() {
       <button 
         className="continue-button"
         onClick={handleContinue}
-        disabled={!selectedMethod}
+        disabled={!selectedMethod || isProcessing}
       >
-        Continue
+        {isProcessing ? 'Processing...' : 'Continue'}
       </button>
     </div>
   );

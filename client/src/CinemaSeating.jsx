@@ -148,7 +148,7 @@ function CinemaSeating() {
   return (
     <div className="seating-container">
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
         className="seating-logo" 
         onClick={handleLogoClick}

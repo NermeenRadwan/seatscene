@@ -45,7 +45,7 @@ function CardDetails() {
   return (
     <div className="card-details-container">
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
         className="card-details-logo" 
         onClick={handleLogoClick}

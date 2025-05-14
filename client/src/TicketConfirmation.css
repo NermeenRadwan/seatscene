@@ -9,6 +9,37 @@
   padding: 20px;
   box-sizing: border-box;
   position: relative;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .ticket-confirmation-container {
+    padding: 10px;
+    justify-content: flex-start;
+    padding-top: 80px;
+  }
+  
+  .ticket-card {
+    max-width: 95%;
+  }
+  
+  .ticket-info-row {
+    flex-direction: column;
+  }
+  
+  .ticket-info-item {
+    margin-bottom: 10px;
+  }
+  
+  .confirmation-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .home-button, .profile-button {
+    width: 100%;
+    margin: 0;
+  }
 }
 
 .ticket-logo {

@@ -1,127 +1,140 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import './UserProfile.css';
+
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: 'http://localhost:5001',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
 
 function UserProfile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  
-  // Mock user data (in a real app, this would come from an API or context)
-  const [userData, setUserData] = useState({
-    name: 'Ahmed Mohamed',
-    email: 'ahmed.mohamed@example.com',
-    phone: '+20 123 456 7890',
-    joinDate: '15 Jan 2023',
-    profileImage: '/profile-placeholder.png',
-  });
-  
-  // Mock bookings data (in a real app, this would come from an API)
-  const [bookings, setBookings] = useState({
-    upcoming: [
-      {
-        id: 'TKT-A8C4D3E2',
-        type: 'Movie',
-        title: 'A Working Man',
-        date: '24 May 2023',
-        time: '7:00 PM',
-        seats: 'D4, D5',
-        location: 'Mokattam',
-        price: '360.00 EGP',
-      },
-      {
-        id: 'TKT-B7F1G3H2',
-        type: 'Theater Show',
-        title: 'Hamlet',
-        date: '30 May 2023',
-        time: '7:30 PM',
-        seats: 'C8, C9, C10',
-        location: 'Maadi',
-        price: '750.00 EGP',
+  const [userData, setUserData] = useState(null);
+  const [bookings, setBookings] = useState({ upcoming: [], history: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login', { state: { from: location.pathname } });
+          return;
+        }
+
+        // Fetch user profile
+        const profileResponse = await api.get('/api/users/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (profileResponse.data.user) {
+          setUserData(profileResponse.data.user);
+          localStorage.setItem('userData', JSON.stringify(profileResponse.data.user));
+        }
+
+        // Fetch user bookings
+        const bookingsResponse = await api.get('/api/users/bookings', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (bookingsResponse.data.bookings) {
+          setBookings(bookingsResponse.data.bookings);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userData');
+          navigate('/login', { state: { from: location.pathname } });
+          return;
+        }
+        setError(error.response?.data?.message || 'Error loading profile');
+        setLoading(false);
       }
-    ],
-    history: [
-      {
-        id: 'TKT-J5K7L9M1',
-        type: 'Movie',
-        title: 'Restart',
-        date: '10 Apr 2023',
-        time: '5:30 PM',
-        seats: 'F7, F8',
-        location: 'Tagamo3',
-        price: '360.00 EGP',
-      },
-      {
-        id: 'TKT-N3P6Q8R2',
-        type: 'Theater Show',
-        title: 'Romeo & Juliet',
-        date: '22 Mar 2023',
-        time: '6:45 PM',
-        seats: 'B12, B13',
-        location: 'Madinrt nasr',
-        price: '500.00 EGP',
-      },
-      {
-        id: 'TKT-S4T7U9V1',
-        type: 'Movie',
-        title: 'Movie 2',
-        date: '15 Feb 2023',
-        time: '9:30 PM',
-        seats: 'G5',
-        location: 'Sheraton',
-        price: '150.00 EGP',
-      }
-    ]
-  });
-  
+    };
+
+    fetchUserData();
+  }, [navigate, location]);
+
   const handleLogoClick = () => {
     navigate('/venue-selection');
   };
-  
+
   const handleContinueBooking = () => {
     navigate('/venue-selection');
   };
-  
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-  
-  const handleLogout = () => {
-    // In a real app, this would clear authentication state
+
+  const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out?')) {
-      navigate('/login');
+      try {
+        const token = localStorage.getItem('token');
+        await api.post('/api/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      } finally {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
+        navigate('/login');
+      }
     }
   };
-  
+
   const handleCancelBooking = (booking) => {
-    // Set the selected booking and show the refund modal
     setSelectedBooking(booking);
     setShowRefundModal(true);
   };
-  
-  const handleConfirmCancel = (refundRequested) => {
-    // In a real app, this would make an API call to cancel the booking
-    // and process a refund if requested
-    const updatedUpcoming = bookings.upcoming.filter(booking => booking.id !== selectedBooking.id);
-    setBookings({
-      ...bookings,
-      upcoming: updatedUpcoming
-    });
-    
-    // Show a success message
-    alert(`Booking cancelled successfully! ${refundRequested ? 'Refund will be processed within 3-5 business days.' : 'No refund requested.'}`);
-    
-    // Close the modal
-    setShowRefundModal(false);
-    setSelectedBooking(null);
+
+  const handleConfirmCancel = async (refundRequested) => {
+    try {
+      const token = localStorage.getItem('token');
+      await api.post(`/api/bookings/${selectedBooking.id}/cancel`, 
+        { refundRequested },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update local state
+      const updatedUpcoming = bookings.upcoming.filter(
+        booking => booking.id !== selectedBooking.id
+      );
+      setBookings({
+        ...bookings,
+        upcoming: updatedUpcoming
+      });
+
+      alert(`Booking cancelled successfully! ${
+        refundRequested ? 'Refund will be processed within 3-5 business days.' : 'No refund requested.'
+      }`);
+
+      setShowRefundModal(false);
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert(error.response?.data?.message || 'Error cancelling booking');
+    }
   };
-  
+
   const handleCancelModal = () => {
     setShowRefundModal(false);
     setSelectedBooking(null);
   };
-  
+
   const renderBookingCard = (booking, showCancelButton = false) => {
     return (
       <div key={booking.id} className="booking-card">
@@ -136,7 +149,9 @@ function UserProfile() {
           <div className="booking-detail-row">
             <div className="booking-detail-item">
               <span className="detail-label">Date:</span>
-              <span className="detail-value">{booking.date}</span>
+              <span className="detail-value">
+                {new Date(booking.date).toLocaleDateString()}
+              </span>
             </div>
             <div className="booking-detail-item">
               <span className="detail-label">Time:</span>
@@ -174,22 +189,58 @@ function UserProfile() {
       </div>
     );
   };
-  
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading">Loading profile...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <div className="error">{error}</div>
+        <button 
+          className="retry-button"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="error-container">
+        <div className="error">User data not found</div>
+        <button 
+          className="retry-button"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="profile-container">
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
         className="profile-logo" 
         onClick={handleLogoClick}
         title="Go to Home"
       />
-      
+      #profile buuton
       <div className="profile-content">
         <div className="profile-sidebar">
           <div className="profile-image-container">
             <img 
-              src={userData.profileImage} 
+              src={userData.profileImage || '/profile-placeholder.png'} 
               alt="Profile" 
               className="profile-image"
               onError={(e) => {
@@ -200,10 +251,14 @@ function UserProfile() {
           </div>
           
           <div className="user-details">
-            <h2 className="user-name">{userData.name}</h2>
+            <h2 className="user-name">
+              {userData.firstName} {userData.lastName}
+            </h2>
             <p className="user-email">{userData.email}</p>
-            <p className="user-phone">{userData.phone}</p>
-            <p className="join-date">Member since: {userData.joinDate}</p>
+            <p className="user-phone">{userData.phone || 'No phone number'}</p>
+            <p className="join-date">
+              Member since: {new Date(userData.joinDate).toLocaleDateString()}
+            </p>
           </div>
           
           <button 
@@ -278,7 +333,7 @@ function UserProfile() {
             <p>Are you sure you want to cancel your booking for:</p>
             <div className="booking-summary">
               <p className="booking-title-modal">{selectedBooking.title}</p>
-              <p>{selectedBooking.date} at {selectedBooking.time}</p>
+              <p>{new Date(selectedBooking.date).toLocaleDateString()} at {selectedBooking.time}</p>
               <p>Seats: {selectedBooking.seats}</p>
               <p>Total Amount: {selectedBooking.price}</p>
             </div>

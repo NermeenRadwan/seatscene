@@ -8,6 +8,22 @@
   padding: 20px;
   box-sizing: border-box;
   position: relative;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .cinema-container {
+    padding: 10px;
+  }
+  
+  .movie-carousel {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .movie-card {
+    max-width: 90%;
+  }
 }
 
 .cinema-logo {
@@ -30,7 +46,7 @@
   font-family: 'Berkshire Swash', cursive;
   font-size: 36px;
   margin-top: 60px;
-  margin-bottom: 40px;
+  margin-bottom: 10px;
 }
 
 .carousel-container {
@@ -40,6 +56,7 @@
   width: 100%;
   max-width: 1000px;
   position: relative;
+  margin: 20px 0;
 }
 
 .movie-carousel {
@@ -61,15 +78,18 @@
 
 .movie-poster {
   height: 320px;
-  width: auto;
+  width: 220px;
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s;
 }
 
-.movie-poster:hover {
-  transform: scale(1.02);
+@media (max-width: 768px) {
+  .movie-poster {
+    height: 280px;
+    width: 190px;
+  }
 }
 
 .movie-title {
@@ -197,4 +217,54 @@
   margin-top: 0;
   margin-bottom: 20px;
   font-family: 'Berkshire Swash', cursive;
+} 
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin: 15px auto;
+  max-width: 80%;
+  text-align: center;
+}
+
+.no-movies-message {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.movie-genre, .movie-duration {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 5px 0;
+}
+
+.movie-genre {
+  font-style: italic;
 } 

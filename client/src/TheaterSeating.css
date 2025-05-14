@@ -8,6 +8,24 @@
   padding: 20px;
   box-sizing: border-box;
   position: relative;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .theater-seating-container {
+    padding: 10px;
+  }
+  
+  .seat {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
+  
+  .row-label {
+    width: 20px;
+    font-size: 12px;
+  }
 }
 
 .theater-logo {

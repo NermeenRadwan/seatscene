@@ -38,7 +38,7 @@ function LocationSelection() {
   return (
     <div className="venue-container">
       <img 
-        src="/ArtboVard 1@4x.png" 
+        src="/Artboard 1@4x.png" 
         alt="Logo" 
         className="venue-logo" 
         onClick={handleLogoClick}
